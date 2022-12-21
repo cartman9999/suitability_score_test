@@ -41,8 +41,12 @@ const fileService = require("./services/files")
 async function main(args) {
     // Validate files have been provided
     try {
+        console.log(colors.bold.blue("Driver's best suitability score calculator \n"))
+        console.log(colors.italic.green.underline("☑️  Validating files"))
         await argsValidator.validate(args)
+        console.log(colors.italic.green.underline("✅ Validated files"))
     } catch (validationError) {
+        console.log(colors.bold.red.underline('ERROR:'))
         throw new Error(validationError.message)
     }
 
@@ -53,6 +57,7 @@ async function main(args) {
     driversSuitabilityScore = await fileService.readFiles(destinationsFile, driversFile)
 
     // Return the best destination and the driver who should perform the task
+    console.log(colors.bold.blue("\nRESULTS")) 
     console.log(colors.bgBrightBlue(" Best suitability score: ")) 
     console.log(colors.bold.yellow(` ${driversSuitabilityScore.currentSSTop}`)) 
     console.log(colors.bgBrightBlue("\n Destination: "))
