@@ -37,6 +37,7 @@ const SSCOMMONFACTORMULTIPLIER = .5
 let bestDriverSS = ""
 let bestDestinationSS = ""
 let currentSSTop = 0
+let assignedDestinationsIndex = []
 /*
 |--------------------------------------------------------------------------
 | END Global Variables
@@ -122,10 +123,36 @@ async function readDestinations(destinationsFile, ...driverData) {
     });
 
     let destinationDetail = []
+    let destinationFilePosition = 1
+    let driversBestDestinationIndex = null
+    let localCurrentSSTop = 0
+    let localBestDestinationSS = ""
+    let localBestDriverSS = ""
+    
+    // console.log("Antes de iniciar")
+    // console.log(assignedDestinationsIndex)
+    // console.log(`Driver: ${driverData[3]}`)
 
     for await (const destination of rlDestinations) {
+        if (assignedDestinationsIndex.includes(destinationFilePosition)) {
+            // console.log("Already assigned, skipping destination #", destinationFilePosition)
+            destinationFilePosition++
+            continue
+        }
+        // console.log(`${destinationFilePosition} ${destination}`)
+
         // Verify destination length
         const suitabilityScore = await getSuitabilityScore(destination.length, driverData)
+
+        // Get the best SS specific to the driver, by doing an internal comparison
+        if (suitabilityScore > localCurrentSSTop) {
+            localCurrentSSTop = suitabilityScore
+            localBestDestinationSS = destination
+            localBestDriverSS = driverData[3]
+
+            // Set current destination position as driver's best to avoid a new assignation to it
+            driversBestDestinationIndex = destinationFilePosition
+        }
 
         // Get the best SS, by doing a comparison
         if (suitabilityScore > currentSSTop) {
@@ -138,7 +165,12 @@ async function readDestinations(destinationsFile, ...driverData) {
             destination,
             suitabilityScore
         })
+
+        destinationFilePosition++
     }
+    // Push driver's best destination index to assigned destinations index array
+    assignedDestinationsIndex.push(driversBestDestinationIndex)
+    // console.log(`Best destination for driver: ${driversBestDestinationIndex} with SS of ${localCurrentSSTop}`)
     
     return destinationDetail
 }
@@ -167,6 +199,7 @@ async function readFiles(destinationsFile, driversFile) {
 
     // Read drivers file line by line and create an array of objects
     // with the suitability score analysis for each driver and destination
+    let driver_position = 1
     for await (const driver of drivers_rl) {
         // Get driver's name details
         const nameLength = driver.length
@@ -174,16 +207,14 @@ async function readFiles(destinationsFile, driversFile) {
         const consonants = stringVerify.countConsonants(driver)
 
         // Compare suitability score
-        const destinationsList = await readDestinations(destinationsFile, nameLength, vowels, consonants, driver)
+        await readDestinations(destinationsFile, nameLength, vowels, consonants, driver)
 
-        // Add driver detail to drivers list, and create a file with the analysis
-        // driversList.push({
-        //     driver,
-        //     nameLength,
-        //     vowels,
-        //     consonants,
-        //     destinationsList
-        // })
+//         console.log(`Temp #${driver_position} suitability score: ${currentSSTop} 
+// Destination: ${bestDestinationSS}
+// Driver: ${bestDriverSS}
+
+// `)
+driver_position++
     }
     
     // Return object with information about the best destination and the driver who should perform the task
