@@ -16,6 +16,7 @@
 */
 // Required modules
 const {join} = require('path')
+var colors = require('colors');
 
 // Required services
 const argsValidator = require("./services/arguments")
@@ -52,11 +53,14 @@ async function main(args) {
     driversSuitabilityScore = await fileService.readFiles(destinationsFile, driversFile)
 
     // Return the best destination and the driver who should perform the task
-    return console.log(`Best suitability score: ${driversSuitabilityScore.currentSSTop} 
-Destination: ${driversSuitabilityScore.bestDestinationSS}
-Driver: ${driversSuitabilityScore.bestDriverSS}
+    console.log(colors.bgBrightBlue(" Best suitability score: ")) 
+    console.log(colors.bold.yellow(` ${driversSuitabilityScore.currentSSTop}`)) 
+    console.log(colors.bgBrightBlue("\n Destination: "))
+    console.log(colors.bold.yellow(` ${driversSuitabilityScore.bestDestinationSS}`))
+    console.log(colors.bgBrightBlue("\n Driver: "))
+    console.log(colors.bold.yellow(` ${driversSuitabilityScore.bestDriverSS}`))
 
-`)
+    return true
 }
 
 /*
@@ -73,5 +77,5 @@ Driver: ${driversSuitabilityScore.bestDriverSS}
 // Read arguments from command line
 const args = process.argv
 
-// Execute main function
+// Execute main function 
 main(args)
